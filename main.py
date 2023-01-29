@@ -16,7 +16,9 @@ app = FastAPI()
 
 @app.get("/")
 def home():
-    return {"Hey, I'm Blazy and I'm here to help you find the answer to your question about Meilisearch. Use the POST route to ask me something."}
+    return {
+        "Hey, I'm Blazy and I'm here to help you find the answer to your question about Meilisearch. Use the POST route to ask me something."
+    }
 
 @app.post("/")
 def answer_prompt(question: str):
@@ -25,16 +27,30 @@ def answer_prompt(question: str):
     if file.exists ():
         with open("search_index.pickle", "rb") as f:
             search_file = pickle.load(f)
-        return {
-            "answer": chain(
+            openAI_response = chain(
                 {
                     "input_documents": search_file.similarity_search(question, k=4),
                     "question": question,
                 },
                 return_only_outputs=True,
             )["output_text"]
-        }
+            return construct_response(openAI_response)
     else:
         return {
-            "answer": "No search index found. Please run the build command first."
+            "error": "No search index found. Please run the build command first."
         }
+
+@app.post("/health")
+def health():
+    return {
+        "status": "ok"
+    }
+
+def construct_response(openAI_response: str):
+    response = openAI_response.split("\n")
+    response.remove('SOURCES:')
+    text_answer = response.pop(0)
+    return {
+        "answer": text_answer.strip(),
+        "sources": response,
+    }
