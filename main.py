@@ -40,7 +40,7 @@ def answer_prompt(question: str):
             "error": "No search index found. Please run the build command first."
         }
 
-@app.post("/health")
+@app.get("/health")
 def health():
     return {
         "status": "ok"
