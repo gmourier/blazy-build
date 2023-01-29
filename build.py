@@ -35,7 +35,7 @@ def get_github_docs(repo_owner, repo_name):
 def source_docs():
     return list(get_github_docs("meilisearch", "documentation"))
 
-def search_index(source_docs):
+def build_index(source_docs):
     source_chunks = []
     splitter = CharacterTextSplitter(separator=" ", chunk_size=1024, chunk_overlap=0)
     for source in source_docs:
@@ -44,23 +44,3 @@ def search_index(source_docs):
     with open("search_index.pickle", "wb") as f:
         pickle.dump(FAISS.from_documents(source_chunks, OpenAIEmbeddings()), f)
 
-chain = load_qa_with_sources_chain(OpenAI(temperature=0))
-
-def prompt(question):
-    file = pathlib.Path("search_index.pickle")
-    if file.exists ():
-        with open("search_index.pickle", "rb") as f:
-            search_file = pickle.load(f)
-        print(
-            # Call OpenAI to get the answer
-            chain(
-                {
-                    "input_documents": search_file.similarity_search(question, k=4),
-                    "question": question,
-                },
-                return_only_outputs=True,
-            )["output_text"]
-        )
-    else:
-        # No search index found. Creating one now... TODO: Move that job elsewhere to rebuild it every day?
-        search_index(source_docs())
