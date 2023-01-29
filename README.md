@@ -8,13 +8,13 @@ $ export OPENAI_API_KEY=sk-...
 $ uvicorn main:app --reload
 ```
 
-### API
+### 📞 API
 
 https://blazy.up.railway.app
 
-### API Docs
+### 📗 API Docs
 
-https://blazy.up.railway.app
+https://blazy.up.railway.app/docs
 
 ---
 
