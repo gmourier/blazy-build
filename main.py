@@ -61,9 +61,10 @@ def health():
 
 def construct_response(openAI_response: str):
     response = openAI_response.split("\n")
-    response.remove('SOURCES:')
+    print(response) # DEBUG LOG
+    # response.remove('SOURCES:')
     text_answer = response.pop(0)
     return {
-        "answer": text_answer.strip(),
-        "sources": response,
+        "answer": text_answer.strip()
+        # "sources": response,
     }
