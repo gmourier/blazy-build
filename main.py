@@ -11,31 +11,8 @@ import tempfile
 import pickle
 from typing import Union
 from fastapi import FastAPI
-from pydantic import BaseModel
-# chain = load_qa_with_sources_chain(OpenAI(temperature=0))
-
-# def prompt(question):
-#     file = pathlib.Path("search_index.pickle")
-#     if file.exists ():
-#         with open("search_index.pickle", "rb") as f:
-#             search_file = pickle.load(f)
-#         print(
-#             # Call OpenAI to get the answer
-#             chain(
-#                 {
-#                     "input_documents": search_file.similarity_search(question, k=4),
-#                     "question": question,
-#                 },
-#                 return_only_outputs=True,
-#             )["output_text"]
-#         )
-#     else:
-#         print("No search index found. Please run the build command first.")
-
-
 
 app = FastAPI()
-
 
 @app.get("/")
 def home():

@@ -43,4 +43,7 @@ def build_index(source_docs):
             source_chunks.append(Document(page_content=chunk, metadata=source.metadata))
     with open("search_index.pickle", "wb") as f:
         pickle.dump(FAISS.from_documents(source_chunks, OpenAIEmbeddings()), f)
+def main():
+    build_index(source_docs())
 
+main()
