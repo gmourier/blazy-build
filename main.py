@@ -60,11 +60,23 @@ def health():
     }
 
 def construct_response(openAI_response: str):
-    response = openAI_response.split("\n")
-    print(response) # DEBUG LOG
-    # response.remove('SOURCES:')
-    text_answer = response.pop(0)
+    if openAI_response.find("SOURCES:") != -1:
+        response = openAI_response.replace('SOURCES:', '').split("\n")
+        response = list(filter(None, response))
+        response = [s.strip() for s in response]
+        return {
+            "answer": response.pop(0),
+            "sources": response,
+        }
+    if openAI_response.find("SOURCE:") != -1:
+        response = openAI_response.replace('SOURCE:', '').split("\n")
+        response = list(filter(None, response))
+        response = [s.strip() for s in response]
+        return {
+            "answer": response.pop(0),
+            "sources": response,
+        }
     return {
-        "answer": text_answer.strip()
-        # "sources": response,
+        "answer": openAI_response.strip(),
+        "sources": []
     }
