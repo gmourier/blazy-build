@@ -21,7 +21,7 @@ h11==0.14.0
 httptools==0.5.0
 huggingface-hub==0.11.1
 humanfriendly==10.0
-langchain==0.0.83
+langchain==0.0.55
 Mako==1.2.4
 multidict==6.0.4
 numpy==1.24.1
