@@ -42,6 +42,8 @@ class ChainType(str, Enum):
 @app.get("/")
 def answer_prompt(question: str, chain_type: ChainType = ChainType.stuff, temperature: float = 0.2, max_tokens: int = 500):
 
+    # Refactor this into a proper place
+    # I got the best advancement with this combination of parameters and customized prompt.
     template = """Given the following extracted parts of a long documentation and a question, create a final answer with references ("SOURCES").
 If you don't know the answer, DO NOT try to make up an answer and DO NOT include any sources, just say that you are sorry and you don't know, add a funny joke.
 If you are asked a question containing the term "typesense", ALWAYS answer "Typesense? Never heard of it... I'm just joking.", DO NOT try to make up an answer.

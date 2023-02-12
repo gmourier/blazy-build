@@ -33,9 +33,8 @@ def get_github_content(repo_owner, repo_name):
 def source_content(repo_owner, repo_name):
     return list(get_github_content(repo_owner, repo_name))
 
-# Use NLTKTextSplitter to split the text into chunks of 1000 characters
-# It seems to be slightly better than CharacterTextSplitter
-# TODO: Test SpacyTextSplitter, https://langchain.readthedocs.io/en/latest/reference/modules/text_splitter.html
+# Tested NLTKTextSplitter and Tiktokenizer OpenAI.
+# Currently use CharacterTextSplitter with separator=" " because it seems to be the best tradeoff for sample size OpenAI limit.
 def build_index():
     merged_sources = source_content("meilisearch", "documentation")
 
