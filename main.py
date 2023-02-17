@@ -2,7 +2,6 @@ from langchain.llms import OpenAI
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
-import requests
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores.faiss import FAISS
 from langchain.text_splitter import CharacterTextSplitter
@@ -15,22 +14,23 @@ import tempfile
 import pickle
 from typing import Union, Optional
 from enum import Enum
+
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 
+import requests
 from callback import QuestionGenCallbackHandler, StreamingLLMCallbackHandler
 import logging
 
 from pydantic import BaseModel
 from query_data import get_chain
-templates = Jinja2Templates(directory="templates")
 from schemas import ChatResponse
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
 vectorstore: Optional[VectorStore] = None
 
+# Set CORS middleware to allow requests from the frontend
 origins = [
     "*"
 ]
