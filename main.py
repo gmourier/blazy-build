@@ -43,11 +43,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# @app.get("/health")
-# def health():
-#     return {
-#         "status": "ok"
-#     }
+@app.get("/health")
+def health():
+    return {
+        "status": "ok"
+    }
+
+# Build the vector space at startup if it doesn't exist
+@app.on_event("startup")
+async def startup_event():
+    logging.info("loading vectorstore")
+    if not Path("vectorstore.pkl").exists():
+        ingest_docs()
+    with open("vectorstore.pkl", "rb") as f:
+        global vectorstore
+        vectorstore = pickle.load(f)
 
 # class ChainType(str, Enum):
 #     stuff = "stuff"
@@ -138,18 +148,7 @@ app.add_middleware(
 # def feedback(feedback: Feedback):
 #     return {}
 
-@app.on_event("startup")
-async def startup_event():
-    logging.info("loading vectorstore")
-    if not Path("vectorstore.pkl").exists():
-        ingest_docs()
-    with open("vectorstore.pkl", "rb") as f:
-        global vectorstore
-        vectorstore = pickle.load(f)
 
-@app.get("/")
-async def get(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.websocket("/chat")
 async def websocket_endpoint(websocket: WebSocket):
