@@ -5,17 +5,9 @@
 ```bash
 $ pip install -r requirements.txt
 $ export OPENAI_API_KEY=sk-...
-$ uvicorn main:app --reload
+$ uvicorn main:app --port 8000 --reload
 ```
-
-### 📞 API
-
-https://blazy.up.railway.app
 
 ### 📗 API Docs
 
-https://blazy.up.railway.app/docs
-
----
-
-Inspired by https://dagster.io/blog/chatgpt-langchain
+http://127.0.0.1:8000/redoc

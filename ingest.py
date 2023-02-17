@@ -1,16 +1,16 @@
+"""Parse documentation sources, compute embeddings and store them in a vector space."""
 import pathlib
 import subprocess
 import tempfile
 import pickle
 
 from langchain.embeddings import OpenAIEmbeddings
-#from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.docstore.document import Document
 from langchain.vectorstores.faiss import FAISS
 
-def ingest_docs():
-    merged_sources = source_content("meilisearch", "documentation")
+def ingest_docs(org_name: str, repo_name: str):
+    merged_sources = source_content(org_name, repo_name)
 
     source_chunks = []
     splitter = CharacterTextSplitter(separator=" ", chunk_size=1000, chunk_overlap=0)
@@ -43,5 +43,5 @@ def get_github_content(repo_owner, repo_name):
                 github_url = f"https://github.com/{repo_owner}/{repo_name}/blob/{git_sha}/{relative_path}"
                 yield Document(page_content=f.read(), metadata={"source": github_url})
 
-# if __name__ == "__main__":
-#     ingest_docs()
+if __name__ == "__main__":
+    ingest_docs("meilisearch", "documentation")
