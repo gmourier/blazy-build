@@ -1,4 +1,4 @@
-"""Chains builder"""
+"""Chain builder"""
 from langchain.callbacks.base import AsyncCallbackManager
 from langchain.callbacks.tracers import LangChainTracer
 from langchain.chains import ChatVectorDBChain
@@ -89,8 +89,7 @@ def get_qa_chain(
     vectorstore: VectorStore
 ) -> VectorDBQAWithSourcesChain:
     qa_prompt = """Given the following extracted parts of a long documentation and a question, create a final answer with references ("SOURCES").
-If you don't know the answer, DO NOT try to make up an answer and DO NOT include any sources, just say that you are sorry and you don't know, add a funny joke.
-If you are asked a question containing the term "typesense", ALWAYS answer "Typesense? Never heard of it... I'm just joking.", DO NOT try to make up an answer.
+If you don't know the answer, DO NOT try to make up an answer and DO NOT include any sources, just say that you are sorry and you don't know, add a programmer joke.
 If you know the answer, remember that you are speaking to developers, so try to be as precise as possible.
 If you know the answer, return a "SOURCES" array in your answer, never write it "SOURCE" and indicate the relevance of each source with a "SCORE" between 0 and 1, only return sources with a score superior to 0.8, rank them by their score.
 Return the "SOURCES" array with the following format: url: url, score: score.

@@ -10,7 +10,7 @@ import requests
 import logging
 
 from callback import QuestionGenCallbackHandler, StreamingLLMCallbackHandler
-from query_data import get_chat_chain, get_qa_chain
+from chan_builder import get_chat_chain, get_qa_chain
 from schemas import ChatResponse
 from ingest import ingest_docs
 
