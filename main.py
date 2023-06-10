@@ -20,6 +20,10 @@ from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 
+from langchain.vectorstores.meilisearch import Meilisearch
+from langchain.embeddings import OpenAIEmbeddings
+import meilisearch
+
 app = FastAPI()
 vectorstore: Optional[VectorStore] = None
 
@@ -46,11 +50,18 @@ def health():
 @app.on_event("startup")
 async def startup_event():
     logging.info("loading vectorstore")
-    if not Path("vectorstore.pkl").exists():
-        ingest_docs("meilisearch", "documentation")
-    with open("vectorstore.pkl", "rb") as f:
-        global vectorstore
-        vectorstore = pickle.load(f)
+    # if not Path("vectorstore.pkl").exists():
+    #ingest_docs("meilisearch", "documentation")
+    # with open("vectorstore.pkl", "rb") as f:
+    #     global vectorstore
+    #     vectorstore = pickle.load(f)
+    global vectorstore
+    client = meilisearch.Client('http://127.0.0.1:7700')
+    index = client.index('langchain_demo')
+    embeddings = OpenAIEmbeddings()
+    vectorstore = Meilisearch(index, embeddings.embed_query, "text")
+    logging.info("vectorstore loaded")
+
 
 @app.get("/chat")
 def chat():

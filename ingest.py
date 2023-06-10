@@ -7,18 +7,29 @@ import pickle
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.docstore.document import Document
-from langchain.vectorstores.faiss import FAISS
+from langchain.vectorstores.meilisearch import Meilisearch
+import meilisearch
+
+import logging
+logger = logging.getLogger(__name__)
 
 def ingest_docs(org_name: str, repo_name: str):
     merged_sources = source_content(org_name, repo_name)
-
     source_chunks = []
-    splitter = CharacterTextSplitter(separator=" ", chunk_size=1000, chunk_overlap=0)
+    splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
     for source in merged_sources:
         for chunk in splitter.split_text(source.page_content):
             source_chunks.append(Document(page_content=chunk, metadata=source.metadata))
-    with open("vectorstore.pkl", "wb") as f:
-        pickle.dump(FAISS.from_documents(source_chunks, OpenAIEmbeddings()), f)
+
+    client = meilisearch.Client('http://127.0.0.1:7700')
+    index = client.index('langchain_demo')
+    index.delete() # delete the index if it already exists to start from fresh data
+    embeddings = OpenAIEmbeddings()
+
+    print("Compute and add documents embeddings to Meilisearch vectorstore...")
+    vectorstore = Meilisearch(index, embeddings.embed_query, "text")
+    vectorstore.add_documents(source_chunks)
+    print("Done.")
 
 def source_content(repo_owner, repo_name):
     return list(get_github_content(repo_owner, repo_name))
@@ -36,7 +47,9 @@ def get_github_content(repo_owner, repo_name):
             .strip()
         )
         repo_path = pathlib.Path(d)
-        markdown_files = list(repo_path.glob("**/*.md")) + list(repo_path.glob("**/*.mdx"))
+
+        markdown_files = list(repo_path.glob("**/resources/**/*.mdx")) + list(repo_path.glob("**/learn/**/*.mdx")) + list(repo_path.glob("**/reference/**/*.mdx"))
+
         for markdown_file in markdown_files:
             with open(markdown_file, "r") as f:
                 relative_path = markdown_file.relative_to(repo_path)

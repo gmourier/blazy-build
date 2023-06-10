@@ -4,7 +4,7 @@ black
 isort
 websockets
 pydantic
-langchain
+/Users/guillaume/langchain
 uvicorn
 faiss-cpu
 bs4
