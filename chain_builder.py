@@ -1,19 +1,21 @@
 """Chain builder"""
-from langchain.callbacks.base import AsyncCallbackManager
+from langchain.callbacks.manager import AsyncCallbackManager
 from langchain.callbacks.tracers import LangChainTracer
-from langchain.chains import ChatVectorDBChain
 from langchain.chains import VectorDBQAWithSourcesChain
+from langchain.chains import RetrievalQAWithSourcesChain
+from langchain.chains import ConversationalRetrievalChain
 from langchain.chains.llm import LLMChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.vectorstores.base import VectorStore
 
 from langchain.prompts.prompt import PromptTemplate
 
 def get_chat_chain(
     vectorstore: VectorStore, question_handler, stream_handler, tracing: bool = False
-) -> ChatVectorDBChain:
+) -> ConversationalRetrievalChain:
     condense_prompt = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
 Chat History:
 {chat_history}
@@ -28,14 +30,18 @@ Standalone question:"""
 You are given the following extracted parts of a long meilisearch document from the official documentation and a question. ONLY provide EXISTING links to the official documentation hosted at https://docs.meilisearch.com/. DO NOT try to make up link that DO NOT exist. Replace the .md extension by .html
 You should only use links that are explicitly listed as a source in the context.
 If the question includes a request for code, provide a code block directly from the documentation.
-If you don't know the answer, just say "Hmm, I'm not sure." DO NOT try to make up an answer.
+DO NOT try to make up an answer.
 If you know the answer, remember that you are speaking to developers, so try to be as precise as possible.
 If the question is not about Meilisearch, politely inform them that you are tuned to only answer questions about Meilisearch.
 If you know the answer, DO NOT include cutted parts.
 DO NOT start the answer with <br> tags.
+
+Use the following context to answer the question
+
+CONTEXT: {context}
+----------
 QUESTION: {question}
-=========
-{context}
+
 =========
 MARKDOWN ANSWER:"""
 
@@ -43,8 +49,8 @@ MARKDOWN ANSWER:"""
         template=qa_prompt, input_variables=["context", "question"]
     )
 
-    """Create a ChatVectorDBChain for question/answering."""
-    # Construct a ChatVectorDBChain with a streaming llm for combine docs
+    """Create a ConversationalRetrievalChain for question/answering."""
+    # Construct a ConversationalRetrievalChain with a streaming llm for combine docs
     # and a separate, non-streaming llm for question generation
     manager = AsyncCallbackManager([])
     question_manager = AsyncCallbackManager([question_handler])
@@ -57,28 +63,34 @@ MARKDOWN ANSWER:"""
         question_manager.add_handler(tracer)
         stream_manager.add_handler(tracer)
 
-    question_gen_llm = OpenAI(
+    question_gen_llm = ChatOpenAI(
         temperature=0,
         verbose=True,
         callback_manager=question_manager,
+        model_name="gpt-4"
     )
-    streaming_llm = OpenAI(
+    streaming_llm = ChatOpenAI(
         streaming=True,
         callback_manager=stream_manager,
         verbose=True,
         temperature=0.2,
-        max_tokens=500
+        max_tokens=500,
+        model_name="gpt-4"
     )
 
     question_generator = LLMChain(
         llm=question_gen_llm, prompt=CONDENSE_QUESTION_PROMPT, callback_manager=manager
     )
+
     doc_chain = load_qa_chain(
         streaming_llm, chain_type="stuff", prompt=QA_PROMPT, callback_manager=manager
     )
+    # doc_chain = load_qa_with_sources_chain(
+    #     streaming_llm, chain_type="stuff", prompt=QA_PROMPT, callback_manager=manager
+    # )
 
-    chat = ChatVectorDBChain(
-        vectorstore=vectorstore,
+    chat = ConversationalRetrievalChain(
+        retriever=vectorstore.as_retriever(),
         combine_docs_chain=doc_chain,
         question_generator=question_generator,
         callback_manager=manager,
@@ -109,7 +121,8 @@ FINAL ANSWER:"""
         max_tokens=500,
         top_p=1,
         frequency_penalty=0.0,
-        presence_penalty=0.0
+        presence_penalty=0.0,
+        model= "gpt-4"
     )
 
     doc_chain = load_qa_with_sources_chain(llm, chain_type="stuff", prompt=PROMPT_STUFF)
